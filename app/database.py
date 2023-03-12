@@ -33,6 +33,10 @@ while True:
                             )
         cursor = conn.cursor()
         print("Connection to database made successfully")
+        # enable uuid v4 generator extension
+        cursor.execute("""CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"""")
+        conn.commit()
+        print("uuid_ossp extension installed")
         break
     except Exception as error:
         print("Connection to database failed")
