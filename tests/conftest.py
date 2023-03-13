@@ -27,18 +27,6 @@ def client(session):
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
 
-@pytest.fixture()
-def test_user(client):
-    user_data = {
-            "email":fake.email(domain=fake.free_email_domain()),"firstname":fake.first_name(),
-            "lastname":fake.last_name(),"username":fake.user_name(),"password":"Password123"
-         }
-    response = client.post("/users", json=user_data)
-    new_user = response.json()
-    assert response.status_code == 201
-    assert user_data['email'] == new_user['email']
-    new_user['password'] = user_data['password']
-    return new_user
 
 @pytest.fixture()
 def test_get_token(client, test_user):
@@ -51,3 +39,28 @@ def test_get_token(client, test_user):
     assert id == test_user['id']
     assert response.status_code == 200
     return token
+
+@pytest.fixture()
+def test_user(client):
+    user_data = {
+            "email":fake.email(domain=fake.free_email_domain()),"firstname":fake.first_name(),
+            "lastname":fake.last_name(),"username":fake.user_name(),"password":"Password123"
+         }
+    response = client.post("/users", json=user_data)
+    schemas.UserResponse(**response.json())
+    new_user = response.json()
+    assert response.status_code == 201
+    assert user_data['email'] == new_user['email']
+    new_user['password'] = user_data['password']
+    return new_user
+
+@pytest.fixture()
+def test_post(client, test_get_token):
+    post_data = {"title": fake.sentence(), "content": fake.paragraph(), "published": fake.boolean()}
+    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
+    response = client.post("/posts", json=post_data, headers=headers)
+    schemas.PostVote(**response.json())
+    new_post = response.json()
+    assert response.status_code == 201
+    assert new_post['Post']['title'] == post_data['title']
+    return new_post

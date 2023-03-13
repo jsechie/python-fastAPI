@@ -1,7 +1,6 @@
-from typing import List
 from app import schemas
 from .database import fake,settings
-from jose import JWTError, jwt
+from jose import jwt
 import pytest
 
 user_data = {
@@ -9,7 +8,7 @@ user_data = {
             "lastname":fake.last_name(),"username":fake.user_name(),"password":"Password123"
          }
 
-def test_connection(client):
+def test_api_status(client):
     response = client.get("/")
     assert response.status_code == 200
     assert response.json().get('message') == "API is up and running"
