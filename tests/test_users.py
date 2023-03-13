@@ -28,9 +28,7 @@ def test_user_creation(client):
     (None,None,None,None,None)
 ])
 def test_user_creation_missing_body(client, email, firstname, lastname, username, password):
-    data = {
-            "email":email,"firstname":firstname,"lastname":lastname,"username":username,"password":password
-         }
+    data = {"email":email,"firstname":firstname,"lastname":lastname,"username":username,"password":password}
     response = client.post("/users", json=data)
     assert response.status_code == 422
 
@@ -56,51 +54,51 @@ def test_incorrect_user_login(client, email, password, status_code):
     assert response.status_code == status_code
 
 
-def test_get_single_user(client, test_get_token, test_user):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
-    response = client.get(f"/users/{test_user['uuid']}", headers=headers)
+def test_get_single_user(auth_client, test_user):
+    response = auth_client.get(f"/users/{test_user['uuid']}")
     user = schemas.UserResponse(**response.json())
     assert user.uuid == test_user['uuid']
-    assert test_get_token['expires_in'] == "15 minutes"
-    assert test_get_token['token_type'] == "bearer"
     assert response.status_code == 200
 
 
-def test_get_single_user_id_not_exist(client, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
+def test_get_single_user_id_not_exist(auth_client):
     user_id = "3e04d503-ddd2-4190-914a-bf5e10be8048"
-    response = client.get(f"/users/{user_id}", headers=headers)
+    response = auth_client.get(f"/users/{user_id}")
     assert response.json().get('detail') == f"User with id {user_id} not found"
-    assert test_get_token['expires_in'] == "15 minutes"
-    assert test_get_token['token_type'] == "bearer"
     assert response.status_code == 404
 
 def test_get_single_user_invalid_token(client, test_user):
-    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = client.get(f"/users/{test_user['uuid']}", headers=headers)
+    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc.eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ"
+    client.headers = {**client.headers,"Authorization": f"Bearer {access_token}"}
+    response = client.get(f"/users/{test_user['uuid']}")
     assert response.json().get('detail') == f"Could not validate credentials"
     assert response.status_code == 401
 
-def test_get_all_users(client, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
-    response = client.get(f"/users", headers=headers)
+def test_get_single_user_unathorized(client, test_user):
+    response = client.get(f"/users/{test_user['uuid']}")
+    assert response.json().get('detail') == f"Not authenticated"
+    assert response.status_code == 401
+
+def test_get_all_users(auth_client):
+    response = auth_client.get(f"/users")
     user = response.json()
-    assert test_get_token['expires_in'] == "15 minutes"
-    assert test_get_token['token_type'] == "bearer"
     assert len(user) > 0
     assert response.status_code == 200
 
 def test_get_all_users_invalid_token(client):
-    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = client.get(f"/users", headers=headers)
+    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc.eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ"
+    client.headers = {**client.headers,"Authorization": f"Bearer {access_token}"}
+    response = client.get(f"/users")
     assert response.json().get('detail') == f"Could not validate credentials"
     assert response.status_code == 401
 
-def test_user_update(client, test_user, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
-    response = client.put(f"/users/{test_user['uuid']}", json=user_data, headers=headers)
+def test_get_all_users_unathorized(client):
+    response = client.get(f"/users")
+    assert response.json().get('detail') == f"Not authenticated"
+    assert response.status_code == 401
+
+def test_user_update(auth_client, test_user):
+    response = auth_client.put(f"/users/{test_user['uuid']}", json=user_data)
     new_user = schemas.UserResponse(**response.json())
     assert response.status_code == 202
     assert user_data['email'] == new_user.email
@@ -112,48 +110,48 @@ def test_user_update(client, test_user, test_get_token):
     (fake.email(domain=fake.free_email_domain()),None,None,None),
     (None,None,None,None)
 ])
-def test_user_update_missing_body(client,test_user, test_get_token, email, firstname, lastname, username):
-    data = {
-            "email":email,"firstname":firstname,"lastname":lastname,"username":username
-         }
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
-    response = client.put(f"/users/{test_user['uuid']}", headers=headers, json=data)
+def test_user_update_missing_body(auth_client,test_user, email, firstname, lastname, username):
+    data = {"email":email,"firstname":firstname,"lastname":lastname,"username":username}
+    response = auth_client.put(f"/users/{test_user['uuid']}", json=data)
     assert response.status_code == 422
 
 
-def test_update_user_id_not_exist(client, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
+def test_update_user_id_not_exist(auth_client,):
     user_id = "3e04d503-ddd2-4190-914a-bf5e10be8048"
-    response = client.put(f"/users/{user_id}", headers=headers, json=user_data)
+    response = auth_client.put(f"/users/{user_id}", json=user_data)
     assert response.json().get('detail') == f"User with id {user_id} not found"
-    assert test_get_token['expires_in'] == "15 minutes"
-    assert test_get_token['token_type'] == "bearer"
     assert response.status_code == 404
 
 def test_update_user_invalid_token(client, test_user):
-    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = client.put(f"/users/{test_user['uuid']}", headers=headers, json=user_data)
+    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc.eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ"
+    client.headers = {**client.headers,"Authorization": f"Bearer {access_token}"}
+    response = client.put(f"/users/{test_user['uuid']}", json=user_data)
     assert response.json().get('detail') == f"Could not validate credentials"
     assert response.status_code == 401
 
-def test_user_deletion(client, test_user, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
-    response = client.delete(f"/users/{test_user['uuid']}", headers=headers)
+def test_update_user_unathenticated(client, test_user):
+    response = client.put(f"/users/{test_user['uuid']}", json=user_data)
+    assert response.json().get('detail') == f"Not authenticated"
+    assert response.status_code == 401
+
+def test_user_deletion(auth_client, test_user):
+    response = auth_client.delete(f"/users/{test_user['uuid']}")
     assert response.status_code == 204
 
-def test_delete_user_id_not_exist(client, test_get_token):
-    headers = {"Authorization": f"Bearer {test_get_token['access_token']}"}
+def test_delete_user_id_not_exist(auth_client):
     user_id = "3e04d503-ddd2-4190-914a-bf5e10be8048"
-    response = client.delete(f"/users/{user_id}", headers=headers)
+    response = auth_client.delete(f"/users/{user_id}")
     assert response.json().get('detail') == f"user with id {user_id} not found"
-    assert test_get_token['expires_in'] == "15 minutes"
-    assert test_get_token['token_type'] == "bearer"
     assert response.status_code == 404
 
 def test_delete_user_invalid_token(client, test_user):
-    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    response = client.delete(f"/users/{test_user['uuid']}", headers=headers)
+    access_token = "eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ.uyaFKOiuaFCsbG001Hh4uyzikPFGG_ubumwqKiLWUxc.eyJpZCI6NSwiZXhwIjoxNjc4Njc3NzUwfQ"
+    client.headers = {**client.headers,"Authorization": f"Bearer {access_token}"}
+    response = client.delete(f"/users/{test_user['uuid']}")
     assert response.json().get('detail') == f"Could not validate credentials"
+    assert response.status_code == 401
+
+def test_delete_user_unathorized(client, test_user):
+    response = client.delete(f"/users/{test_user['uuid']}")
+    assert response.json().get('detail') == f"Not authenticated"
     assert response.status_code == 401

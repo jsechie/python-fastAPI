@@ -1,7 +1,7 @@
 version: '3'
 services:
   api:
-    build: .
+    image: jaysech/fastapi
     depends_on:
       - postgres
     ports:
@@ -12,19 +12,32 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_USERNAME=${DB_USERNAME}
       - DB_NAME=${DB_NAME}
+      - TEST_DB_HOSTNAME=${TEST_DB_HOSTNAME}
+      - TEST_DB_PORT=${TEST_DB_PORT}
+      - TEST_DB_PASSWORD=${TEST_DB_PASSWORD}
+      - TEST_DB_USERNAME=${TEST_DB_USERNAME}
+      - TEST_DB_NAME=${TEST_DB_NAME}
       - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM = ${ALGORITHM}
       - ACCESS_TOKEN_EXPIRE_MINUTES = ${ACCESS_TOKEN_EXPIRE_MINUTES}
-      
+
   postgres:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_DB=${DB_NAME}
-    
     volumes:
       - postgres_db:/var/lib/postgresql/data
+
+  postgres_test:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_db_test:/var/lib/postgresql/data
 
 volumes:
   postgres_db:

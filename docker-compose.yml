@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   api:
-    image: jaysech/fastapi
+    build: .
     depends_on:
       - postgres
     ports:
@@ -16,6 +16,11 @@ services:
       - DB_PASSWORD=fastapi123
       - DB_USERNAME=postgres
       - DB_NAME=fastapi_fcc
+      - TEST_DB_HOSTNAME=postgres_test
+      - TEST_DB_PORT=5432
+      - TEST_DB_PASSWORD=fastapi123
+      - TEST_DB_USERNAME=postgres
+      - TEST_DB_NAME=fastapi_fcc_test
       - SECRET_KEY=cef71093415dc5c7c06b5af5aff4cd49f6e36770b0db0b2f6ad07b998ef94cf2
       - ALGORITHM = "HS256"
       - ACCESS_TOKEN_EXPIRE_MINUTES = 15
@@ -25,7 +30,15 @@ services:
       - POSTGRES_PASSWORD=fastapi123
       - POSTGRES_USER=postgres
       - POSTGRES_DB=fastapi_fcc
-    
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+
+  postgres_test:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=fastapi123
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=fastapi_fcc_test
     volumes:
       - postgres_db:/var/lib/postgresql/data
 
