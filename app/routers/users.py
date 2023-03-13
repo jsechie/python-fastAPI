@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 # Create a user    
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user :schemas.CreateUser, db: Session = Depends(get_db)
                 ):
                 # , user_id: int= Depends(oauth2.get_current_user)):
@@ -33,7 +33,7 @@ def get_a_single_user(id, db: Session = Depends(get_db)
     return user
 
 # get all users
-@router.get("/", response_model=List[schemas.UserResponse])
+@router.get("", response_model=List[schemas.UserResponse])
 def get_all_users(db: Session = Depends(get_db)
                   , user_id: int= Depends(oauth2.get_current_user)):
     users = db.query(models.User).all()
