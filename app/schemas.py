@@ -32,12 +32,19 @@ class CreateUser(UserBase):
     lastname: str
     email: EmailStr
 
+# Validate user crestion body
+class UpdateUser(UserBase):
+    firstname: str
+    lastname: str
+    email: EmailStr
+
 # User response formatter
 class UserResponse(UserBase):
     firstname: str
     lastname: str
     email: EmailStr
     uuid: str
+    id: int
     class Config:
         orm_mode = True
 

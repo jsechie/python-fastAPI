@@ -41,7 +41,7 @@ def get_all_users(db: Session = Depends(get_db)
 
 #  update a user 
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UserResponse)
-def update_user(id: str, user_update: schemas.UserBase, db: Session = Depends(get_db)
+def update_user(id: str, user_update: schemas.UpdateUser, db: Session = Depends(get_db)
                 , user_id: int= Depends(oauth2.get_current_user)):
     user_query = db.query(models.User).filter(models.User.uuid == id)
     user = user_query.first()
