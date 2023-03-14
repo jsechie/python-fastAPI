@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 # get all post
-@router.get("/", response_model=List[schemas.PostVote])
+@router.get("", response_model=List[schemas.PostVote])
 def get_all_posts(db: Session = Depends(get_db),
                   search: Optional[str] = "", 
                   limit: int = 10,
@@ -23,7 +23,7 @@ def get_all_posts(db: Session = Depends(get_db),
     return posts
 
 # post a post to db
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostVote)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.PostVote)
 def create_post(post :schemas.CreatePost, db: Session = Depends(get_db)
                 , current_user: int = Depends(oauth2.get_current_user)):
     new_post = models.Post(user_id=current_user.id, **post.dict())
