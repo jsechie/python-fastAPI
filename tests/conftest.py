@@ -3,8 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db, Base
-from .database import TestSessionLocal, engine, fake, settings
-from jose import jwt
+from .database import TestSessionLocal, engine, fake
 from app.oauth2 import create_access_token
 
 @pytest.fixture()
@@ -39,18 +38,6 @@ def auth_client(client, token):
         "Authorization": f"Bearer {token}"
     }
     return client
-
-# @pytest.fixture()
-# def test_get_token(client, test_user):
-#     response = client.post("/login", data={"username":test_user['email'],"password":test_user['password']})
-#     assert response.json().get('token_type') == "bearer"
-#     assert response.json().get('expires_in') == "15 minutes"
-#     token = response.json()
-#     payload = jwt.decode(token['access_token'], settings.secret_key, algorithms=[settings.algorithm])
-#     id: str = payload.get("id")
-#     assert id == test_user['id']
-#     assert response.status_code == 200
-#     return token
 
 @pytest.fixture()
 def test_user(client):

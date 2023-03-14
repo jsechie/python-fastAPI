@@ -8,7 +8,8 @@ services:
       - 8000:8000
     volumes:
       - ./app:/usr/src/app/app:ro
-      - ./db_migration:/usr/src/db_migration:ro
+      - ./db_migration:/usr/src/app/db_migration:ro
+      - ./tests:/usr/src/app/tests:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - DB_HOSTNAME=postgres
